@@ -25,6 +25,8 @@
 
         <activity android:name=".model.DetailsActivity">
         </activity>
+        <activity android:name=".model.AddActivity">
+        </activity>
     </application>
 
 </manifest>

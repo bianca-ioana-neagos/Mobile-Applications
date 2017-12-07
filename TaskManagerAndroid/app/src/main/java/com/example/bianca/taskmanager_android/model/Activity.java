@@ -1,5 +1,10 @@
 package com.example.bianca.taskmanager_android.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Index;
+import android.arch.persistence.room.PrimaryKey;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -7,26 +12,32 @@ import java.util.Date;
  * Created by BIANCA on 07.11.2017.
  */
 
+@Entity(indices = {@Index("title")})
 public class Activity implements Serializable {
-    private static long id=0;
+
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    private int id;
+    @ColumnInfo(name = "title")
     private String title;
+    @ColumnInfo(name = "status")
     private String status;
+    @ColumnInfo(name = "dueDate")
     private String dueDate;
+
+    public Activity(){}
 
     public Activity(String title, String status, String dueDate) {
         this.title = title;
         this.status = status;
         this.dueDate = dueDate;
-        this.id++;
     }
 
-    public static long getId() {
+    public int getId() {
         return id;
     }
 
-    public static void setId(long id) {
-        Activity.id = id;
-    }
+    public void setId(int id) { this.id = id; }
 
     public String getTitle() {
         return title;
