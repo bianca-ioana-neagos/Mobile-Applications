@@ -4,7 +4,7 @@ import {
     StyleSheet,
     Text, TextInput, TouchableOpacity,
     View, Share, FlatList, Alert,
-    AsyncStorage,
+    AsyncStorage,ListView,
 } from 'react-native';
 import {Repo} from './Repo';
 import {Task} from "./Task";
@@ -16,27 +16,56 @@ class ListActivity extends React.Component {
         headerStyle: { backgroundColor: "#e9b7dc" },
         title: 'List of tasks',
     };
-    onRefresh() {
-        this.setState({refreshing: true});
-        this.setState({refreshing: false});
-    }
-    constructor(props){
-        super(props);
+
+    constructor() {
+        super();
         this.state = {
-            refreshing: false,
+            ds: global.ds.cloneWithRows([]),
         };
-        this.onRefresh = this.onRefresh.bind(this);
-        this.repo = new Repo();
+        AsyncStorage.getAllKeys().then((keys) => {
+            tasks = [];
+            for (keyIndex in keys) {
+                AsyncStorage.getItem(keys[keyIndex]).then((value) => {
+                    tasks.push(JSON.parse(value));
+                    this.setState({ds: global.ds.cloneWithRows(tasks)});
+                });
+            }
+        });
+    }
+
+    updateState(){
+        AsyncStorage.getAllKeys().then((keys) => {
+            tasks = [];
+            for(keyIndex in keys){
+                AsyncStorage.getItem(keys[keyIndex]).then((value) => {
+                    tasks.push(JSON.parse(value));
+                    this.setState({ds: global.ds.cloneWithRows(tasks)});
+                })
+            }
+
+        });
+    }
+
+    renderRow(record){
+        return (
+            <View>
+                <Text style={styles.cell}
+                      onPress={() => this.props.navigation.navigate('Details', {
+                          obj: record,
+                          updateState: this.updateState.bind(this)
+                      })}>{record.name}
+
+                </Text>
+
+
+            </View>
+        );
     }
 
     render() {
-        const { navigate } = this.props.navigation;
 
-        let elems = this.repo.tasks;
-        let data = [];
-        for (let i = 0; i < elems.length; i++) {
-            data.push({key: i, value: elems[i]});
-        }
+
+
         return (
             <View style={styles.container}>
                 <View style={styles.footer}>
@@ -47,52 +76,13 @@ class ListActivity extends React.Component {
                     </TextInput>
 
                 </View>
-                <FlatList
-                    data={data}
-                    renderItem={({item})=>
-                        <View>
-                            <Text style={styles.cell}
-                                onPress={() => navigate('Details', {
-                                    obj: item.value,
-                                    tasks: this.repo.tasks,
-                                    refreshing: this.onRefresh,
-                                })}>{item.value.name}
-
-                                </Text>
-                            <TouchableOpacity  style={styles.deleteButton}
-                                               onPress={()=> {
-                                                   Alert.alert(
-                                                       'Alert',
-                                                       'Are you sure you want to delete?',
-                                                       [
-                                                           {text: 'Cancel', onPress: () => console.log('Canceled'), style: 'cancel'},
-                                                           {
-                                                               text: 'Delete', onPress: () => {
-
-                                                               elems.splice(this.props.index, 1);
-                                                               AsyncStorage.removeItem(this.props.index);
-                                                               this.onRefresh();
-                                                           }
-                                                           },
-                                                       ],
-                                                       {cancelable: true}
-                                                   );
-                                               }
-                                               }
-                            >
-                                <Text style={styles.addButtonText}>-</Text>
-                            </TouchableOpacity>
-                            <Text></Text>
-                        </View>
-                    }
+                <ListView
+                    dataSource={this.state.ds}
+                    renderRow={this.renderRow.bind(this)}
 
                 />
 
-                <TouchableOpacity onPress={() => navigate('Add', {
-                    obj: new Task('','',''),
-                    tasks: this.repo.tasks,
-                    refreshing: this.onRefresh,
-                })} style={styles.addButton}>
+                <TouchableOpacity onPress={() => this.props.navigation.navigate('Add', {updateState: this.updateState.bind(this)})} style={styles.addButton}>
                     <Text style={styles.addButtonText}>+</Text>
                 </TouchableOpacity>
 
@@ -104,14 +94,7 @@ class ListActivity extends React.Component {
         );
     }
 
-    addTask(){
-        if(this.state.taskText){
-            var d = new Date();
-            this.repo.add({value: new Task(this.state.taskText,'To Do', d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate())});
-            this.setState({taskArray:this.state.taskArray})
-            this.setState({taskText:''});
-        }
-    }
+
     sendTask(){
         Share.share({message: this.state.taskText});
     }
@@ -156,21 +139,7 @@ const styles = StyleSheet.create({
         color:'#fff',
         fontSize:24,
     },
-    deleteButton:{
-        position:'absolute',
-        backgroundColor:'#28e9b1',
-        width:30,
-        height:30,
-        borderRadius:50,
-        borderColor:'#ccc',
-        alignItems: 'center',
-        justifyContent:'center',
-        elevation:8,
-        bottom: 20,
-        right:20,
-        zIndex:10,
 
-    },
     textInput:{
         alignSelf:'stretch',
         color:'#fff',

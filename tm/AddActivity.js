@@ -18,15 +18,13 @@ class AddActivity extends React.Component {
         super(props);
         const {state} = this.props.navigation;
         this.state = {
-            name: state.params.obj.name,
-            status: state.params.obj.status,
-            dueDate: state.params.obj.dueDate,
+            name: "",
+            status: "",
+            dueDate: new Date(),
         };
     }
 
     render() {
-        const {state} = this.props.navigation;
-        const {goBack} = this.props.navigation;
         return (
             <View style={styles.container}>
                 <TextInput
@@ -54,13 +52,10 @@ class AddActivity extends React.Component {
                         name: this.state.name,
                         status: this.state.status,
                         dueDate: this.state.dueDate
-                    }));
-                    state.params.obj.name = this.state.name;
-                    state.params.obj.status = this.state.status;
-                    state.params.obj.dueDate = this.state.dueDate;
-                    state.params.tasks.push(new Task(this.state.name, this.state.status,this.state.dueDate));
-                    state.params.refreshing();
-                    goBack(null);
+                    })).then(() => {
+                        this.props.navigation.state.params.updateState();
+                        this.props.navigation.goBack();
+                    });
 
 
                 }} style={styles.addButton}>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
     Platform,
-    StyleSheet,
+    StyleSheet,Alert,
     Text, TextInput, TouchableOpacity,
     View, Share, FlatList, Button,AsyncStorage,
 } from 'react-native';
@@ -47,20 +47,41 @@ class DetailsActivity extends React.Component {
 
 
                 <TouchableOpacity onPress={() => {
-                    AsyncStorage.setItem(this.state.name, JSON.stringify({
+                    AsyncStorage.mergeItem(this.props.navigation.state.params.obj.name, JSON.stringify({
                         name: this.state.name,
                         status: this.state.status,
                         dueDate: this.state.dueDate
-                    }));
-                    state.params.obj.name = this.state.name;
-                    state.params.obj.status = this.state.status;
-                    state.params.obj.dueDate = this.state.dueDate;
-                    state.params.refreshing();
-                    goBack(null);
-
+                    })).then(()=>{
+                        this.props.navigation.state.params.updateState();
+                        this.props.navigation.goBack();})
 
                 }} style={styles.addButton}>
                     <Text style={styles.addButtonText}>Save</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity  style={styles.deleteButton}
+                                   onPress={()=> {
+                                       Alert.alert(
+                                           'Alert',
+                                           'Are you sure you want to delete?',
+                                           [
+                                               {text: 'Cancel', onPress: () => console.log('Canceled'), style: 'cancel'},
+                                               {
+                                                   text: 'Delete', onPress: () => {
+
+                                                   AsyncStorage.removeItem(this.props.navigation.state.params.obj.name).then(() => {
+                                                       this.props.state.updateState();
+                                                       this.props.navigation.goBack();
+                                                   });
+                                               }
+                                               },
+                                           ],
+                                           {cancelable: true}
+                                       );
+                                   }
+                                   }
+                >
+                    <Text style={styles.addButtonText}>-</Text>
                 </TouchableOpacity>
 
             </View>
@@ -106,6 +127,22 @@ const styles = StyleSheet.create({
     addButtonText:{
         color:'#fff',
         fontSize:24,
+    },
+    deleteButton:{
+        position:'absolute',
+        backgroundColor:'#28e9b1',
+        width:80,
+        height:80,
+        borderRadius:50,
+        borderColor:'#ccc',
+        alignItems: 'center',
+        justifyContent:'center',
+        elevation:8,
+        bottom: 30,
+        left:20,
+        zIndex:10,
+
+
     },
     textInput:{
         alignSelf:'stretch',

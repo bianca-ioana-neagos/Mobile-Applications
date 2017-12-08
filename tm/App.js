@@ -11,7 +11,7 @@ import {
     Platform,
     StyleSheet,
     Text, TextInput, TouchableOpacity,
-    View, Share
+    View, Share, ListView,
 } from 'react-native';
 
 import {
@@ -20,7 +20,25 @@ import {
 import Pie from 'react-native-pie';
 
 
-global.tasks=[{name:'task1',status:'to do', dueDate:new Date()},{name:'task2',status:'in progress', dueDate:new Date()},{name:'task3',status:'done', dueDate:new Date()}];
+
+global.tasks=[
+    {
+        name:'task1',
+        status:'to do',
+        dueDate:new Date()
+    },
+    {
+        name:'task2',
+        status:'in progress',
+        dueDate:new Date()
+    },
+    {
+        name:'task3',
+        status:'done',
+        dueDate:new Date()
+    }
+];
+global.ds = new ListView.DataSource({rowHasChanged:(r1,r2)=>r1 !==r2});
 
 class HomeActivity extends React.Component {
     static navigationOptions = {
@@ -130,6 +148,8 @@ const styles = StyleSheet.create({
 
 
 });
+global.tasks=[{name:'task1',status:'to do', dueDate:new Date()},{name:'task2',status:'in progress', dueDate:new Date()},{name:'task3',status:'done', dueDate:new Date()}];
+global.ds = new ListView.DataSource({rowHasChanged:(r1,r2)=>r1 !==r2});
 const App = StackNavigator({
     Home: {screen: HomeActivity},
     List: {screen: ListActivity},
