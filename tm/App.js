@@ -40,6 +40,25 @@ global.tasks=[
 ];
 global.ds = new ListView.DataSource({rowHasChanged:(r1,r2)=>r1 !==r2});
 
+data=[];
+toDo=[];
+done=[];
+inProgr=[];
+for(i=0;i<ds.length;i++){
+    if(ds[i].status =='to do'){
+        toDo.push([ds[i]])
+    }
+    if(ds[i].status =='done'){
+        done.push([ds[i]])
+    }
+    if(ds[i].status =='in progress'){
+        inProgr.push([ds[i]])
+    }
+}
+toDoP=(toDo.length *100)/3;
+doneP=(done.length*100)/3;
+inProgrP=(inProgr.length*100)/3;
+
 class HomeActivity extends React.Component {
     static navigationOptions = {
         headerStyle: { backgroundColor: "#e9b7dc" },

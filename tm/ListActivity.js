@@ -139,7 +139,21 @@ const styles = StyleSheet.create({
         color:'#fff',
         fontSize:24,
     },
+    deleteButton:{
+        position:'absolute',
+        backgroundColor:'#28e9b1',
+        width:30,
+        height:30,
+        borderRadius:50,
+        borderColor:'#ccc',
+        alignItems: 'center',
+        justifyContent:'center',
+        elevation:8,
+        bottom: 20,
+        right:20,
+        zIndex:10,
 
+    },
     textInput:{
         alignSelf:'stretch',
         color:'#fff',
