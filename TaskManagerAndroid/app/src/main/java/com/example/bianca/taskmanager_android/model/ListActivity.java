@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.bianca.taskmanager_android.R;
 import com.github.mikephil.charting.charts.PieChart;
@@ -22,6 +23,12 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,21 +41,32 @@ import java.util.ListIterator;
  * Created by BIANCA on 07.11.2017.
  */
 
-public class ListActivity extends AppCompatActivity {
+public class ListActivity extends AppCompatActivity implements ValueEventListener {
     private static final String TAG = ListActivity.class.getName();
     private static final int UPDATE_CODE = 2;
 
-    private ActivityRepo repo;
+    FirebaseDatabase firebaseDatabase;
+    FirebaseAuth firebaseAuth;
+    Boolean isManager;
+
+    private static ActivityRepo repo;
     private ArrayAdapter<String> adapter;
 
-    List<Activity> tasks =new ArrayList<>();
 
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_display);
+        firebaseAuth = FirebaseAuth.getInstance();
         repo = new ActivityRepo(getApplicationContext());
 
-        tasks = repo.getAll();
+        repo.clearAll();
+
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        final DatabaseReference dbReference2 = firebaseDatabase.getReference("users");
+        final DatabaseReference dbReference = dbReference2.child(EncodeString(firebaseAuth.getCurrentUser().getEmail())).child("tasks");
+        dbReference.addValueEventListener(this);
+
+
 
         final ListView taskList = (ListView) findViewById(R.id.listView);
 
@@ -75,19 +93,32 @@ public class ListActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Intent newDetailActivity = new Intent(ListActivity.this, DetailsActivity.class);
                         System.out.println("position " + position);
-                        int idPos=repo.getActivityByPosition(position);
-                        System.out.println("id from position " + idPos);
-                        newDetailActivity.putExtra("ActivityOnPosition", repo.getActivity(idPos));
-                        startActivityForResult(newDetailActivity,UPDATE_CODE);
+                        System.out.println("i " + i);
+                        newDetailActivity.putExtra("EXTRA_ID", repo.getAll().get(position).getId());
+                        System.out.println("id " + repo.getAll().get(position).getId());
+                        newDetailActivity.putExtra("EXTRA_TITLE", repo.getAll().get(position).getTitle());
+                        newDetailActivity.putExtra("EXTRA_STATUS", repo.getAll().get(position).getStatus());
+                        newDetailActivity.putExtra("EXTRA_DUEDATE", repo.getAll().get(position).getDueDate());
+                        startActivity(newDetailActivity);
+
                     }
                 });
                 dialog.setPositiveButton("Delete", new AlertDialog.OnClickListener(){
 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        adapter.remove(taskNames.get(position));
-                        repo.deleteActivity(repo.getActivityByPosition(position));
-                        adapter.notifyDataSetChanged();
+                        //adapter.remove(taskNames.get(position));
+
+                        Activity task = new Activity(
+                                repo.getAll().get(position).getTitle(),
+                                repo.getAll().get(position).getStatus(),
+                                repo.getAll().get(position).getDueDate(),
+                                firebaseAuth.getCurrentUser().getEmail());
+                        System.out.println("title " + task.getTitle());
+                        repo.deleteActivity(task);
+                        dbReference.child(task.getTitle()).removeValue();
+                        finish();
+                        //adapter.notifyDataSetChanged();
                     }
                 });
                 dialog.show();
@@ -98,79 +129,68 @@ public class ListActivity extends AppCompatActivity {
 
         Button addButton = (Button) findViewById((R.id.add));
 
-        addButton.setOnClickListener(new AdapterView.OnClickListener() {
+        addButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                //final Context context = view.getRootView().getContext();
-                Activity activity = new Activity("","","");
-                Intent newAddActivity = new Intent(ListActivity.this, AddActivity.class);
-                newAddActivity.putExtra("ActivityOnPosition", activity);
-                startActivityForResult(newAddActivity,UPDATE_CODE);
-                //repo.insertActivity(activity);
-                //tasks.add(activity);
+                dbReference2.child(EncodeString(firebaseAuth.getCurrentUser().getEmail())).child("manager").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        isManager = dataSnapshot.getValue(Boolean.class);
+                        if(isManager){
+                            startActivity(new Intent(getApplicationContext(), AddToOthersActivity.class));
+                        }
+                        else {
+                            startActivity(new Intent(getApplicationContext(), AddActivity.class));
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
+
         });
 
-//        setContentView(R.layout.activity_main);
-////
-//        float toDo = repo.getAllByStatus("To Do").size();
-//        float inProgr = repo.getAllByStatus("In Progress").size();
-//        float done = repo.getAllByStatus("Done").size();
-//
-//        float toDoP = (toDo *100)/3;
-//        float inProgrP =(inProgr *100)/3;
-//        float doneP=(done *100)/3;
-//
-//        float[] yData = {toDoP,inProgrP,doneP};
-//        String[] xData = {"To Do", "In Progress", "Done"};
-//
-//        List<PieEntry> yVals1 = new ArrayList<>();
-//        for(int i=0;i<yData.length;i++){
-//            yVals1.add(new PieEntry(yData[i],xData[i]));
-//        }
-//
-//        PieDataSet dataSet = new PieDataSet(yVals1,"");
-//        dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
-//        PieData data = new PieData(dataSet);
-//
-//        PieChart chart = (PieChart) findViewById(R.id.showChart);
-//        chart.setData(data);
-//        chart.animateY(1000);
-//        chart.setUsePercentValues(true);
-//        chart.getDescription().setEnabled(false);
-//        chart.invalidate();
-//
-//        Legend l =chart.getLegend();
-//        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+
+
     }
 
+    public static ActivityRepo getRepo() {
+        return repo;
+    }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(TAG,"agergererhaeheheheaga");
-        Log.i(TAG, String.valueOf(tasks.size()));
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == UPDATE_CODE && resultCode == RESULT_OK) {
-            Activity activity = (Activity) data.getSerializableExtra("ActivityOnPositionReturn");
-            System.out.println(activity.getTitle());
-            if(repo.getActivity(activity.getId()) != null)
-                repo.updateActivity(activity);
-            else
-                repo.insertActivity(activity);
-
-            adapter.clear();
-            List<String> taskNames = new ArrayList<>();
-            for(Activity t : this.repo.getAll()){
-                taskNames.add(t.getTitle());
+    public void onDataChange(DataSnapshot dataSnapshot) {
+        for(DataSnapshot taskSnapshot : dataSnapshot.getChildren()){
+            Activity task = taskSnapshot.getValue(Activity.class);
+            if(repo.getActivity(task.getId()) == null) {
+                repo.insertActivity(task);
             }
-            adapter.addAll(taskNames);
-            adapter.notifyDataSetChanged();
-
+            else{
+                repo.updateActivity(task);
+            }
         }
+
+        adapter.clear();
+        List<String> taskNames = new ArrayList<>();
+        for(Activity t : this.repo.getAll()){
+            taskNames.add(t.getTitle());
+        }
+        adapter.addAll(taskNames);
+        adapter.notifyDataSetChanged();
+
+
+
     }
 
-    public ActivityRepo getRepo() {
-        return repo;
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
+    }
+
+    public String EncodeString(String string) {
+        return string.replace(".", ",");
     }
 }

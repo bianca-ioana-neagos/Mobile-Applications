@@ -1,104 +1,85 @@
 package com.example.bianca.taskmanager_android;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
+import android.widget.EditText;
+import android.widget.Toast;
 
-import com.example.bianca.taskmanager_android.model.Activity;
 import com.example.bianca.taskmanager_android.model.ActivityRepo;
 import com.example.bianca.taskmanager_android.model.EmailActivity;
+import com.example.bianca.taskmanager_android.model.HomeActivity;
 import com.example.bianca.taskmanager_android.model.ListActivity;
+import com.example.bianca.taskmanager_android.model.SignUpActivity;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    Button login, signup;
+    EditText email, password;
+    FirebaseAuth firebaseAuth;
 
-    private float[] yData = {20,30,50};
-    private String[] xData = {"To Do", "In Progress", "Done"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            setChart();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
+        this.email = (EditText) findViewById(R.id.editEmail);
+        this.password = (EditText) findViewById(R.id.editPassword);
+        this.login = (Button)findViewById(R.id.login);
+        signup = (Button) findViewById(R.id.signUp);
+
+        this.login.setOnClickListener(this);
+        this.signup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this, SignUpActivity.class);
+                startActivity(i);
+            }
+        });
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser crtUser = firebaseAuth.getCurrentUser();
+        if(crtUser != null){
+            Intent i = new Intent(this, HomeActivity.class);
+            startActivity(i);
         }
 
-        Button send = (Button) findViewById(R.id.sendEmail);
-        send.setOnClickListener(new AdapterView.OnClickListener() {
-            @Override
-            public void onClick(View parent) {
-                Intent newEmailActivity = new Intent(MainActivity.this, EmailActivity.class);
-                startActivity(newEmailActivity);
-            }
-        });
-        Button show = (Button) findViewById(R.id.showTasks);
-        show.setOnClickListener(new AdapterView.OnClickListener() {
-            @Override
-            public void onClick(View parent) {
-                Intent newListActivity = new Intent(MainActivity.this, ListActivity.class);
-                startActivity(newListActivity);
-            }
-        });
 
 
     }
-    private void setChart() throws IllegalAccessException, InstantiationException {
-        //ListActivity listActivityClass = ListActivity.class.newInstance();
-        ActivityRepo repo = new ActivityRepo(getApplicationContext());
 
-        float toDo = repo.getAllByStatus("To Do").size();
-        float inProgr = repo.getAllByStatus("In Progress").size();
-        float done = repo.getAllByStatus("Done").size();
-
-        float toDoP = (toDo *100)/3;
-        float inProgrP =(inProgr *100)/3;
-        float doneP=(done *100)/3;
-
-        float[] yData = {toDo,inProgr,done};
-        String[] xData = {"To Do", "In Progress", "Done"};
-
-        List<PieEntry> yVals1 = new ArrayList<>();
-        for(int i=0;i<yData.length;i++){
-            yVals1.add(new PieEntry(yData[i],xData[i]));
-        }
-
-        PieDataSet dataSet = new PieDataSet(yVals1,"");
-        dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
-        PieData data = new PieData(dataSet);
-
-        PieChart chart = (PieChart) findViewById(R.id.showChart);
-        chart.notifyDataSetChanged();
-        chart.setData(data);
-        chart.animateY(1000);
-        chart.setUsePercentValues(true);
-        chart.getDescription().setEnabled(false);
-        chart.invalidate();
-
-        Legend l =chart.getLegend();
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+    @Override
+    public void onClick(View view) {
+        firebaseAuth.signInWithEmailAndPassword(this.email.getText().toString(), this.password.getText().toString())
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful()) {
+                            Intent i = new Intent(MainActivity.this, HomeActivity.class);
+                            startActivity(i);
+                        }
+                        else{
+                            Toast.makeText(MainActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 }

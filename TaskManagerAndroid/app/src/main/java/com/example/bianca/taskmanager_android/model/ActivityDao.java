@@ -23,11 +23,14 @@ public interface ActivityDao {
     @Query("select * from Activity"+" where status = :statusArg")
     List<Activity> getEntriesByStatus(String statusArg);
 
+    @Query("select * from Activity"+" where user = :userArg")
+    List<Activity> getEntriesByUser(String userArg);
+
     @Insert
     void insert(Activity activity);
 
-    @Query("delete from Activity"+" where id = :activity")
-    void delete(int activity);
+    @Delete
+    void delete(Activity activity);
 
     @Update
     void update(Activity activity);

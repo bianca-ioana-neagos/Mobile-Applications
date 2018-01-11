@@ -16,6 +16,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.example.bianca.taskmanager_android.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,6 +29,9 @@ import java.util.ArrayList;
 
 public class DetailsActivity extends AppCompatActivity {
     private static final String TAG = DetailsActivity.class.getName();
+    ActivityRepo repo;
+    FirebaseAuth firebaseAuth;
+    DatabaseReference dbRef;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,13 +44,12 @@ public class DetailsActivity extends AppCompatActivity {
         final EditText dueDate = (EditText) findViewById(R.id.editDate);
 
 
-        final Activity task;
+
         final Intent intent = getIntent();
-        task = (Activity) intent.getSerializableExtra("ActivityOnPosition");
-
-
-        title.setText(task.getTitle());
-        status.setText(task.getStatus());
+        final int id = intent.getIntExtra("EXTRA_ID",0);
+        title.setText(intent.getStringExtra("EXTRA_TITLE"));
+        status.setText(intent.getStringExtra("EXTRA_STATUS"));
+        dueDate.setText(this.getIntent().getStringExtra("EXTRA_DUEDATE"));
         dueDate.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
@@ -55,31 +60,34 @@ public class DetailsActivity extends AppCompatActivity {
                 }
             }
         });
-       dueDate.setText(task.getDueDate());
+
+        repo = ListActivity.getRepo();
+
+        firebaseAuth = FirebaseAuth.getInstance();
+        //dbRef = FirebaseDatabase.getInstance().getReference("users").child(firebaseAuth.getCurrentUser().getUid()).child("tasks");
+
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Log.i(TAG, "save");
-                final Context context = view.getRootView().getContext();
+                String titleE = title.getText().toString();
+                String statusE = status.getText().toString();
+                String dueDateE = dueDate.getText().toString();
+                Activity task = new Activity(id,titleE,statusE,dueDateE,firebaseAuth.getCurrentUser().getEmail());
+                dbRef = FirebaseDatabase.getInstance().getReference("users").child(EncodeString(firebaseAuth.getCurrentUser().getEmail())).child("tasks");
 
-                final EditText title = (EditText) findViewById(R.id.editTitle);
-                final EditText status = (EditText) findViewById(R.id.editStatus);
-                final EditText dueDate = (EditText) findViewById(R.id.editDate);
+                repo.updateActivity(task);
 
-
-                task.setId(task.getId());
-                task.setTitle(title.getText().toString());
-                task.setStatus(status.getText().toString());
-                task.setDueDate(dueDate.getText().toString());
-
-                Intent intent1 = new Intent();
-                intent1.putExtra("ActivityOnPositionReturn", (Serializable) task);
-                setResult(RESULT_OK, intent1);
+                dbRef.child(titleE).setValue(task);
                 finish();
-                }
+
+            }
 
         });
 
 
+    }
+    public String EncodeString(String string) {
+        return string.replace(".", ",");
     }
 }

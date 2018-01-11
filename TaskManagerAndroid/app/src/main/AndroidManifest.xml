@@ -17,6 +17,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".model.SignUpActivity">
+        </activity>
+
+        <activity android:name=".model.HomeActivity">
+        </activity>
+
         <activity android:name=".model.EmailActivity">
         </activity>
 
@@ -25,7 +31,11 @@
 
         <activity android:name=".model.DetailsActivity">
         </activity>
+
         <activity android:name=".model.AddActivity">
+        </activity>
+
+        <activity android:name=".model.AddToOthersActivity">
         </activity>
     </application>
 

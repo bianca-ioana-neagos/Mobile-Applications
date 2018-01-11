@@ -62,7 +62,9 @@ public class ActivityRepo {
     public void updateActivity(Activity activity){
         activityDatabase.activityDao().update(activity);
     }
-    public void deleteActivity(int activity){
+    public void deleteActivity(Activity activity){
         activityDatabase.activityDao().delete(activity);
     }
+
+    public void clearAll(){activityDatabase.activityDao().clear();}
 }
