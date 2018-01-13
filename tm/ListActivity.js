@@ -6,8 +6,6 @@ import {
     View, Share, FlatList, Alert,
     AsyncStorage,ListView,
 } from 'react-native';
-import {Repo} from './Repo';
-import {Task} from "./Task";
 
 
 class ListActivity extends React.Component {
@@ -17,33 +15,45 @@ class ListActivity extends React.Component {
         title: 'List of tasks',
     };
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             ds: global.ds.cloneWithRows([]),
+            email: this.props.navigation.state.params.email
         };
-        AsyncStorage.getAllKeys().then((keys) => {
-            tasks = [];
-            for (keyIndex in keys) {
-                AsyncStorage.getItem(keys[keyIndex]).then((value) => {
-                    tasks.push(JSON.parse(value));
-                    this.setState({ds: global.ds.cloneWithRows(tasks)});
-                });
-            }
-        });
+        // AsyncStorage.getAllKeys().then((keys) => {
+        //     tasks = [];
+        //     for (keyIndex in keys) {
+        //         AsyncStorage.getItem(keys[keyIndex]).then((value) => {
+        //             tasks.push(JSON.parse(value));
+        //             this.setState({ds: global.ds.cloneWithRows(tasks)});
+        //         });
+        //     }
+        // });
+        this.ref = global.firebaseApp.database().ref().child('users').child(this.state.email.replace(/\./g, ',')).child('tasks');
+        this.auth = global.firebaseApp.auth();
+        this.updateState();
     }
 
     updateState(){
-        AsyncStorage.getAllKeys().then((keys) => {
-            tasks = [];
-            for(keyIndex in keys){
-                AsyncStorage.getItem(keys[keyIndex]).then((value) => {
-                    tasks.push(JSON.parse(value));
-                    this.setState({ds: global.ds.cloneWithRows(tasks)});
-                })
-            }
-
-        });
+        // AsyncStorage.getAllKeys().then((keys) => {
+        //     tasks = [];
+        //     for(keyIndex in keys){
+        //         AsyncStorage.getItem(keys[keyIndex]).then((value) => {
+        //             tasks.push(JSON.parse(value));
+        //             this.setState({ds: global.ds.cloneWithRows(tasks)});
+        //         })
+        //     }
+        //
+        // });
+        this.ref.on('value', (snap) => {
+          var taskList = [];
+          snap.forEach(element => {
+            taskList.push(element.val())
+          });
+          console.log(taskList);
+          this.setState({ds: global.ds.cloneWithRows(taskList)});
+        })
     }
 
     renderRow(record){
@@ -54,32 +64,17 @@ class ListActivity extends React.Component {
                           obj: record,
                           updateState: this.updateState.bind(this)
                       })}>{record.name}
-
                 </Text>
-
-
             </View>
         );
     }
 
     render() {
-
-
-
         return (
             <View style={styles.container}>
-                <View style={styles.footer}>
-
-                    <TextInput style={styles.textInput}
-                               onChangeText={(taskText)=>this.setState({name: taskText})}value={this.state.taskText}
-                               placeholder='>task' placeholderTextColour='white'>
-                    </TextInput>
-
-                </View>
                 <ListView
                     dataSource={this.state.ds}
                     renderRow={this.renderRow.bind(this)}
-
                 />
 
                 <TouchableOpacity onPress={() => this.props.navigation.navigate('Add', {updateState: this.updateState.bind(this)})} style={styles.addButton}>
@@ -93,10 +88,8 @@ class ListActivity extends React.Component {
 
         );
     }
-
-
     sendTask(){
-        Share.share({message: this.state.taskText});
+        Share.share({message: this.state.email});
     }
 }
 
@@ -108,11 +101,6 @@ const styles = StyleSheet.create({
         flex: 1,
         marginBottom: 100,
     },
-    footer:{
-        alignItems:'center',
-        left:0,
-        right:0,
-    },
     cell: {
         flex: 1,
         margin: 5,
@@ -121,38 +109,25 @@ const styles = StyleSheet.create({
         fontSize:20,
     },
     addButton:{
-        position:'absolute',
-        backgroundColor:'#E91E63',
-        width:80,
-        height:80,
-        borderRadius:50,
-        borderColor:'#ccc',
-        alignItems: 'center',
-        justifyContent:'center',
-        elevation:8,
-        bottom: 30,
-        right:20,
-        zIndex:10,
+      position: 'relative',
+      backgroundColor: '#E91E63',
+      width: 90,
+      height: 90,
+      borderRadius: 50,
+      borderColor: '#ccc',
+      alignItems: 'center',
+      justifyContent: 'center',
+      elevation: 8,
+      bottom: 30,
+      right: 20,
+      zIndex: 10,
+      top:80,
+      left:250,
 
     },
     addButtonText:{
         color:'#fff',
         fontSize:24,
-    },
-    deleteButton:{
-        position:'absolute',
-        backgroundColor:'#28e9b1',
-        width:30,
-        height:30,
-        borderRadius:50,
-        borderColor:'#ccc',
-        alignItems: 'center',
-        justifyContent:'center',
-        elevation:8,
-        bottom: 20,
-        right:20,
-        zIndex:10,
-
     },
     textInput:{
         alignSelf:'stretch',
@@ -165,18 +140,19 @@ const styles = StyleSheet.create({
         borderTopColor:'#ededed',
     },
     sendButton:{
-        position:'absolute',
-        backgroundColor:'#308be9',
-        width:80,
-        height:80,
-        borderRadius:50,
-        borderColor:'#ccc',
-        alignItems: 'center',
-        justifyContent:'center',
-        elevation:8,
-        bottom: 30,
-        left:20,
-        zIndex:10,
+      position: 'relative',
+      backgroundColor:'#308be9',
+      width:90,
+      height:90,
+      borderRadius:50,
+      borderColor:'#ccc',
+      alignItems: 'center',
+      justifyContent:'center',
+      elevation:8,
+      bottom: 30,
+      left:20,
+      zIndex:10,
+      top: -7,
 
     },
     sendButtonText:{

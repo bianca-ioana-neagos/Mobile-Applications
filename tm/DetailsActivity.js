@@ -20,11 +20,15 @@ class DetailsActivity extends React.Component {
             status: state.params.obj.status,
             dueDate: state.params.obj.dueDate,
         };
+        this.auth = global.firebaseApp.auth();
+        this.auth.onAuthStateChanged((user) => {
+          if(user){
+            this.ref = global.firebaseApp.database().ref().child('users').child(user.email.replace(/\./g, ',')).child('tasks');
+          }
+        })
     }
 
     render() {
-        const {state} = this.props.navigation;
-        const {goBack} = this.props.navigation;
         return (
             <View style={styles.container}>
                 <TextInput
@@ -38,23 +42,27 @@ class DetailsActivity extends React.Component {
                     value={this.state.status}
                 />
                 <DatePicker
-
                             date={this.state.dueDate}
                             mode="date"
                             placeholder="select date"
                             onDateChange={(date) => {this.setState({dueDate: date})}}
                 />
-
-
                 <TouchableOpacity onPress={() => {
-                    AsyncStorage.mergeItem(this.props.navigation.state.params.obj.name, JSON.stringify({
-                        name: this.state.name,
-                        status: this.state.status,
-                        dueDate: this.state.dueDate
-                    })).then(()=>{
+                    // AsyncStorage.mergeItem(this.props.navigation.state.params.obj.name, JSON.stringify({
+                    //     name: this.state.name,
+                    //     status: this.state.status,
+                    //     dueDate: this.state.dueDate
+                    // })).then(()=>{
+                    //     this.props.navigation.state.params.updateState();
+                    //     this.props.navigation.goBack();})
+                    this.ref.child(this.state.name).set({
+                      name: this.state.name,
+                      status: this.state.status,
+                      dueDate: this.state.dueDate
+                    }).then(() => {
                         this.props.navigation.state.params.updateState();
-                        this.props.navigation.goBack();})
-
+                        this.props.navigation.goBack();
+                    });
                 }} style={styles.addButton}>
                     <Text style={styles.addButtonText}>Save</Text>
                 </TouchableOpacity>
@@ -69,10 +77,14 @@ class DetailsActivity extends React.Component {
                                                {
                                                    text: 'Delete', onPress: () => {
 
-                                                   AsyncStorage.removeItem(this.props.navigation.state.params.obj.name).then(() => {
-                                                       this.props.state.updateState();
-                                                       this.props.navigation.goBack();
-                                                   });
+                                                   // AsyncStorage.removeItem(this.props.navigation.state.params.obj.name).then(() => {
+                                                   //     this.props.state.updateState();
+                                                   //     this.props.navigation.goBack();
+                                                   // });
+                                                   this.ref.child(this.state.name).remove().then(() => {
+                                                     this.props.navigation.state.params.updateState();
+                                                     this.props.navigation.goBack();
+                                                   })
                                                }
                                                },
                                            ],
@@ -110,18 +122,20 @@ const styles = StyleSheet.create({
         height: 50
     },
     addButton: {
-        position: 'absolute',
-        backgroundColor: '#E91E63',
-        width: 90,
-        height: 90,
-        borderRadius: 50,
-        borderColor: '#ccc',
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 8,
-        bottom: 30,
-        right: 20,
-        zIndex: 10,
+      position: 'relative',
+      backgroundColor: '#E91E63',
+      width: 90,
+      height: 90,
+      borderRadius: 50,
+      borderColor: '#ccc',
+      alignItems: 'center',
+      justifyContent: 'center',
+      elevation: 8,
+      bottom: 30,
+      right: 20,
+      zIndex: 10,
+      top:110,
+      left:250,
 
     },
     addButtonText:{
@@ -129,18 +143,19 @@ const styles = StyleSheet.create({
         fontSize:24,
     },
     deleteButton:{
-        position:'absolute',
-        backgroundColor:'#28e9b1',
-        width:80,
-        height:80,
-        borderRadius:50,
-        borderColor:'#ccc',
-        alignItems: 'center',
-        justifyContent:'center',
-        elevation:8,
-        bottom: 30,
-        left:20,
-        zIndex:10,
+      position: 'relative',
+      backgroundColor:'#308be9',
+      width:90,
+      height:90,
+      borderRadius:50,
+      borderColor:'#ccc',
+      alignItems: 'center',
+      justifyContent:'center',
+      elevation:8,
+      bottom: 30,
+      left:20,
+      zIndex:10,
+      top: 20,
 
 
     },

@@ -6,8 +6,6 @@
 import ListActivity from './ListActivity';
 import DetailsActivity from './DetailsActivity';
 import AddActivity from './AddActivity';
-import LoginActivity from './LoginActivity';
-import SignupActivity from './SignupActivity';
 import React, {Component} from 'react';
 import {
     Platform,
@@ -20,19 +18,6 @@ import {
     StackNavigator,
 } from "react-navigation";
 import Pie from 'react-native-pie';
-import * as firebase from 'firebase';
-
-console.disableYellowBox = true;
-
-const config = {
-    apiKey: "AIzaSyAUbaJ_1fd7TP-Q1-0SVQyaKWkltrf76f4",
-    authDomain: "taskmanegerreact.firebaseapp.com",
-    databaseURL: "https://taskmanegerreact.firebaseio.com",
-    projectId: "taskmanegerreact",
-    storageBucket: "taskmanegerreact.appspot.com",
-    messagingSenderId: "816024357740"
-  };
-global.firebaseApp = firebase.initializeApp(config);
 
 global.tasks=[{name:'task1',status:'to do', dueDate:new Date()},{name:'task2',status:'in progress', dueDate:new Date()},{name:'task3',status:'done', dueDate:new Date()}];
 global.ds = new ListView.DataSource({rowHasChanged:(r1,r2)=>r1 !==r2});
@@ -71,14 +56,14 @@ class HomeActivity extends React.Component {
                 </View>
                 <View style={styles.chart}>
                 <Pie
-                radius={100}
-                innerRadius={30}
+                radius={150}
+                innerRadius={50}
                 series={[20, 30, 50]}
                     colors={['#308be9', '#e95bd7', '#e95408']}
                 />
 
                 </View>
-                <TouchableOpacity onPress={() => navigate("List", {email: this.props.navigation.state.params.email})} style={styles.addButton}>
+                <TouchableOpacity onPress={() => navigate("List")} style={styles.addButton}>
                     <Text style={styles.addButtonText}>Tasks</Text>
                 </TouchableOpacity>
 
@@ -123,20 +108,18 @@ const styles = StyleSheet.create({
 
     },
     addButton: {
-      position: 'relative',
-      backgroundColor: '#E91E63',
-      width: 90,
-      height: 90,
-      borderRadius: 50,
-      borderColor: '#ccc',
-      alignItems: 'center',
-      justifyContent: 'center',
-      elevation: 8,
-      bottom: 30,
-      right: 20,
-      zIndex: 10,
-      top:80,
-      left:250,
+        position: 'absolute',
+        backgroundColor: '#E91E63',
+        width: 90,
+        height: 90,
+        borderRadius: 50,
+        borderColor: '#ccc',
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 8,
+        bottom: 30,
+        right: 20,
+        zIndex: 10,
 
     },
     addButtonText: {
@@ -144,19 +127,18 @@ const styles = StyleSheet.create({
         fontSize: 24,
     },
     logoutButton:{
-      position: 'relative',
-      backgroundColor:'#308be9',
-      width:90,
-      height:90,
-      borderRadius:50,
-      borderColor:'#ccc',
-      alignItems: 'center',
-      justifyContent:'center',
-      elevation:8,
-      bottom: 30,
-      left:20,
-      zIndex:10,
-      top: -5,
+
+        backgroundColor:'#308be9',
+        width:80,
+        height:80,
+        borderRadius:50,
+        borderColor:'#ccc',
+        alignItems: 'center',
+        justifyContent:'center',
+        elevation:8,
+        bottom: 30,
+        left:20,
+        zIndex:10,
 
     },
     logoutButtonText:{
@@ -168,12 +150,11 @@ const styles = StyleSheet.create({
 });
 
 const App = StackNavigator({
-    Login: {screen: LoginActivity},
+
     Home: {screen: HomeActivity},
     List: {screen: ListActivity},
     Add: { screen:AddActivity},
     Details: {screen: DetailsActivity},
-    Signup: {screen: SignupActivity},
 
 });
 export default App;

@@ -12,6 +12,7 @@
     "react-native": "0.51.0",
     "react-native-chart": "^1.0.8-beta",
     "react-native-datepicker": "^1.6.0",
+    "react-native-firebase": "^3.2.2",
     "react-native-pie": "^0.4.0",
     "react-native-pie-chart": "^1.0.12",
     "react-navigation": "^1.0.0-beta.21"
