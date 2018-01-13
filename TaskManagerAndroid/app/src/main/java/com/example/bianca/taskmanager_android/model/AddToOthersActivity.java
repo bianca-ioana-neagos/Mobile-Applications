@@ -63,8 +63,21 @@ public class AddToOthersActivity extends AppCompatActivity {
                 String dueDateE = dueDate.getText().toString();
                 String toE = to.getText().toString();
                 System.out.println("to      "+EncodeString(toE));
-                if(toE!=""){
+                System.out.println("me   "+ EncodeString(firebaseAuth.getCurrentUser().getEmail()));
+                if(toE.isEmpty()){
+                    Activity task = new Activity(titleE,statusE,dueDateE,firebaseAuth.getCurrentUser().getEmail());
+                    dbReference = FirebaseDatabase.getInstance()
+                            .getReference("users")
+                            .child(EncodeString(firebaseAuth.getCurrentUser().getEmail()))
+                            .child("tasks");
+                    repo.insertActivity(task);
+                    dbReference.child(titleE).setValue(task);
+                    finish();
+
                     //toE=firebaseAuth.getCurrentUser().getEmail();
+
+                }
+                else {
                     Activity task = new Activity(titleE, statusE, dueDateE, toE);
 
                     dbReference = FirebaseDatabase.getInstance()
@@ -74,18 +87,8 @@ public class AddToOthersActivity extends AppCompatActivity {
                     repo.insertActivity(task);
                     dbReference.child(titleE).setValue(task);
                     finish();
-                }
-                else {
 
 
-                    Activity task = new Activity(titleE,statusE,dueDateE,firebaseAuth.getCurrentUser().getEmail());
-                    dbReference = FirebaseDatabase.getInstance()
-                            .getReference("users")
-                            .child(EncodeString(firebaseAuth.getCurrentUser().getEmail()))
-                            .child("tasks");
-                    repo.insertActivity(task);
-                    dbReference.child(titleE).setValue(task);
-                    finish();
                 }
 
             }
