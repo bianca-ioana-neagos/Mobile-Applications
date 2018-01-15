@@ -60,7 +60,7 @@ public class DetailsActivity extends AppCompatActivity {
                 }
             }
         });
-
+        title.setEnabled(false);
         repo = ListActivity.getRepo();
 
         firebaseAuth = FirebaseAuth.getInstance();

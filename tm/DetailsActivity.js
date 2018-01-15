@@ -32,6 +32,7 @@ class DetailsActivity extends React.Component {
         return (
             <View style={styles.container}>
                 <TextInput
+                    editable={false}
                     style={styles.textInput}
                     onChangeText={(text) => this.setState({name: text})}
                     value={this.state.name}

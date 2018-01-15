@@ -21,6 +21,7 @@ import {
 } from "react-navigation";
 import Pie from 'react-native-pie';
 import * as firebase from 'firebase';
+import * as PushNotification from 'react-native-push-notification';
 
 console.disableYellowBox = true;
 
@@ -62,7 +63,10 @@ class HomeActivity extends React.Component {
         title:'Home',
     };
 
+    notifications(){}
+
     render() {
+        this.notifications();
         const { navigate } = this.props.navigation;
         return (
             <View style={styles.container}>

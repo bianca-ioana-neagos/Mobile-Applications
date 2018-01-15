@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet,Switch,Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Platform,StyleSheet,Switch,Text, TextInput, TouchableOpacity, View} from 'react-native';
 
 
 class SignupActivity extends React.Component {
@@ -41,6 +41,7 @@ class SignupActivity extends React.Component {
                     onChangeText={(email) => this.setState({email})}
                 />
                 <TextInput
+                    secureTextEntry={true}
                     style={styles.textInput}
                     onChangeText={(password) => this.setState({password})}
                 />
